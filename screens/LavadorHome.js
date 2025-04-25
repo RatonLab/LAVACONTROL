@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Picker } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { auth } from '../firebaseConfig';
 import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 export default function LavadorHome() {
   const navigation = useNavigation();
@@ -27,7 +18,7 @@ export default function LavadorHome() {
 
   const iniciarLavado = () => {
     if (!patente || !tipoVehiculo || !local || !area || !tipoLavado || !estadoInicial) {
-      Alert.alert('Campos incompletos', 'Por favor completa todos los campos antes de iniciar el lavado.');
+      Alert.alert('Campos incompletos', 'Por favor completa todos los datos antes de iniciar el lavado.');
       return;
     }
     const horaActual = new Date();
@@ -52,6 +43,17 @@ export default function LavadorHome() {
       return `${minutos} min ${segundos} seg`;
     }
     return '';
+  };
+
+  const handleNuevoLavado = () => {
+    setPatente('');
+    setTipoVehiculo('');
+    setLocal('');
+    setArea('');
+    setTipoLavado('');
+    setEstadoInicial('');
+    setHoraInicio(null);
+    setHoraFin(null);
   };
 
   const handleLogout = async () => {
@@ -150,20 +152,21 @@ export default function LavadorHome() {
       </TouchableOpacity>
 
       {horaInicio && (
-        <Text style={styles.infoText}>🕒 Inicio: {horaInicio.toLocaleTimeString()}</Text>
+        <Text style={styles.infoText}>Hora de Inicio: {horaInicio.toLocaleTimeString()}</Text>
       )}
       {horaFin && (
         <>
-          <Text style={styles.infoText}>🕓 Fin: {horaFin.toLocaleTimeString()}</Text>
-          <Text style={styles.infoText}>🧼 Tiempo total de lavado: {calcularDuracion()}</Text>
+          <Text style={styles.infoText}>Hora de Fin: {horaFin.toLocaleTimeString()}</Text>
+          <Text style={styles.infoText}>Duración: {calcularDuracion()}</Text>
+          <TouchableOpacity style={styles.buttonNew} onPress={handleNuevoLavado}>
+            <Text style={styles.buttonText}>Registrar nuevo lavado</Text>
+          </TouchableOpacity>
         </>
       )}
 
-      {/* Botón de cerrar sesión */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Cerrar Sesión</Text>
+        <Text style={styles.buttonText}>Cerrar Sesión</Text>
       </TouchableOpacity>
-
     </ScrollView>
   );
 }
@@ -196,6 +199,8 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+    borderWidth: 1,
+    borderColor: '#ccc',
     marginBottom: 15,
     backgroundColor: '#f9f9f9',
   },
@@ -213,6 +218,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  buttonNew: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  logoutButton: {
+    backgroundColor: '#F44336',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 30,
+  },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
@@ -222,18 +241,5 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
     color: '#555',
-  },
-  logoutButton: {
-    backgroundColor: '#FF5252',
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
-  },
-  logoutText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
