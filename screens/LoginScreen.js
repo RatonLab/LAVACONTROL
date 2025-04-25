@@ -9,14 +9,11 @@ import {
   Image,
 } from 'react-native';
 import {
-  getAuth,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import app from '../firebaseConfig';
+import { auth } from '../firebaseConfig'; // ✅ auth con persistencia
 import { useNavigation } from '@react-navigation/native';
-
-const auth = getAuth(app);
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -41,8 +38,8 @@ export default function LoginScreen() {
         return;
       }
 
-      // Redirección provisional (puedes cambiarla por lógica de rol)
-      navigation.replace('AdminHome');
+      // 🔁 Luego de login exitoso, Splash redirige según el rol
+      navigation.replace('Splash');
 
     } catch (error) {
       console.error(error);

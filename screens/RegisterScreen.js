@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from 'react-native';
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification
+} from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig'; // ✅ usa auth y db inicializados con persistencia
 import { useNavigation } from '@react-navigation/native';
 
 export default function RegisterScreen() {
@@ -17,14 +27,14 @@ export default function RegisterScreen() {
     }
 
     try {
-      // Crear usuario con Firebase
+      // ✅ Crear usuario en Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Enviar verificación de correo
+      // ✅ Enviar verificación por correo
       await sendEmailVerification(user);
 
-      // Guardar usuario en Firestore con rol por defecto "lavador"
+      // ✅ Registrar en Firestore con rol por defecto
       await setDoc(doc(db, 'usuarios', user.uid), {
         email,
         rol: 'lavador'

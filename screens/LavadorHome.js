@@ -1,35 +1,193 @@
-import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { Picker } from '@react-native-picker/picker'; // ✅ CORRECTO
 import { useNavigation } from '@react-navigation/native';
 
 export default function LavadorHome() {
   const navigation = useNavigation();
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigation.replace('Login');
+  const [patente, setPatente] = useState('');
+  const [tipoVehiculo, setTipoVehiculo] = useState('');
+  const [area, setArea] = useState('');
+  const [tipoLavado, setTipoLavado] = useState('');
+  const [estadoInicial, setEstadoInicial] = useState('');
+  const [horaInicio, setHoraInicio] = useState(null);
+  const [horaFin, setHoraFin] = useState(null);
+
+  const iniciarLavado = () => {
+    if (!patente || !tipoVehiculo || !area || !tipoLavado || !estadoInicial) {
+      Alert.alert('Campos incompletos', 'Por favor completa todos los datos antes de iniciar el lavado.');
+      return;
+    }
+    const horaActual = new Date();
+    setHoraInicio(horaActual);
+    setHoraFin(null);
+  };
+
+  const terminarLavado = () => {
+    if (!horaInicio) {
+      Alert.alert('Error', 'Debes iniciar el lavado antes de terminarlo.');
+      return;
+    }
+    const horaActual = new Date();
+    setHoraFin(horaActual);
+  };
+
+  const calcularDuracion = () => {
+    if (horaInicio && horaFin) {
+      const diferencia = (horaFin - horaInicio) / 1000; // en segundos
+      const minutos = Math.floor(diferencia / 60);
+      const segundos = Math.floor(diferencia % 60);
+      return `${minutos} min ${segundos} seg`;
+    }
+    return '';
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido, Lavador</Text>
-      <Button title="Cerrar sesión" onPress={handleLogout} color="#D9534F" />
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Registro de Lavado</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Patente del Vehículo"
+        value={patente}
+        onChangeText={setPatente}
+      />
+
+      <Text style={styles.label}>Tipo de Vehículo</Text>
+      <Picker
+        selectedValue={tipoVehiculo}
+        style={styles.picker}
+        onValueChange={(itemValue) => setTipoVehiculo(itemValue)}
+      >
+        <Picker.Item label="Seleccione..." value="" />
+        <Picker.Item label="Automóvil" value="Automóvil" />
+        <Picker.Item label="SUV" value="SUV" />
+        <Picker.Item label="Camioneta" value="Camioneta" />
+        <Picker.Item label="Furgón" value="Furgón" />
+        <Picker.Item label="Camión 3/4" value="Camión 3/4" />
+        <Picker.Item label="Minibús" value="Minibús" />
+        <Picker.Item label="Camión" value="Camión" />
+      </Picker>
+
+      <Text style={styles.label}>Área</Text>
+      <Picker
+        selectedValue={area}
+        style={styles.picker}
+        onValueChange={(itemValue) => setArea(itemValue)}
+      >
+        <Picker.Item label="Seleccione..." value="" />
+        <Picker.Item label="Mecánica" value="Mecánica" />
+        <Picker.Item label="Desabolladura" value="Desabolladura" />
+        <Picker.Item label="Ventas" value="Ventas" />
+        <Picker.Item label="Rentacar" value="Rentacar" />
+        <Picker.Item label="Lavado" value="Lavado" />
+      </Picker>
+
+      <Text style={styles.label}>Tipo de Lavado</Text>
+      <Picker
+        selectedValue={tipoLavado}
+        style={styles.picker}
+        onValueChange={(itemValue) => setTipoLavado(itemValue)}
+      >
+        <Picker.Item label="Seleccione..." value="" />
+        <Picker.Item label="Cortesía" value="Cortesía" />
+        <Picker.Item label="Interior" value="Interior" />
+        <Picker.Item label="Exterior" value="Exterior" />
+        <Picker.Item label="Completo" value="Completo" />
+        <Picker.Item label="Motor" value="Motor" />
+      </Picker>
+
+      <Text style={styles.label}>Estado Inicial</Text>
+      <Picker
+        selectedValue={estadoInicial}
+        style={styles.picker}
+        onValueChange={(itemValue) => setEstadoInicial(itemValue)}
+      >
+        <Picker.Item label="Seleccione..." value="" />
+        <Picker.Item label="Muy Sucio" value="Muy Sucio" />
+        <Picker.Item label="Sucio" value="Sucio" />
+        <Picker.Item label="Medio" value="Medio" />
+        <Picker.Item label="Limpio" value="Limpio" />
+        <Picker.Item label="Muy Limpio" value="Muy Limpio" />
+      </Picker>
+
+      <TouchableOpacity style={styles.buttonStart} onPress={iniciarLavado}>
+        <Text style={styles.buttonText}>Iniciar Lavado</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.buttonEnd} onPress={terminarLavado}>
+        <Text style={styles.buttonText}>Terminar Lavado</Text>
+      </TouchableOpacity>
+
+      {horaInicio && (
+        <Text style={styles.infoText}>Hora de Inicio: {horaInicio.toLocaleTimeString()}</Text>
+      )}
+      {horaFin && (
+        <>
+          <Text style={styles.infoText}>Hora de Fin: {horaFin.toLocaleTimeString()}</Text>
+          <Text style={styles.infoText}>Duración: {calcularDuracion()}</Text>
+        </>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff'
+    padding: 20,
+    backgroundColor: '#fff',
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 20
-  }
+    marginBottom: 20,
+    alignSelf: 'center',
+    color: '#2196F3',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 10,
+    color: '#333',
+  },
+  picker: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginBottom: 15,
+    backgroundColor: '#f9f9f9',
+  },
+  buttonStart: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonEnd: {
+    backgroundColor: '#FF9800',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  infoText: {
+    fontSize: 16,
+    marginTop: 5,
+    textAlign: 'center',
+    color: '#555',
+  },
 });

@@ -1,32 +1,59 @@
 import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import app from '../firebaseConfig';
+import { View, Image, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { auth } from '../firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
-export default function SplashScreen({ navigation }) {
-  const auth = getAuth(app);
+export default function SplashScreen() {
+  const navigation = useNavigation();
+  const db = getFirestore();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Aquí puedes diferenciar por email para simular ROL
-        const email = user.email;
-        if (email === 'admin@lavacontrol.com') {
-          navigation.replace('AdminHome');
-        } else if (email === 'lavador@lavacontrol.com') {
-          navigation.replace('LavadorHome');
-        } else if (email === 'calidad@lavacontrol.com') {
-          navigation.replace('ControlCalidadHome');
-        } else if (email === 'observador@lavacontrol.com') {
-          navigation.replace('ObservadorHome');
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setTimeout(async () => {
+        if (user) {
+          if (!user.emailVerified) {
+            Alert.alert(
+              'Correo no verificado',
+              'Debes verificar tu correo antes de ingresar.'
+            );
+            navigation.replace('Login');
+            return;
+          }
+
+          try {
+            const docRef = doc(db, 'usuarios', user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              const rol = data.rol?.toLowerCase();
+
+              if (rol === 'administrador') {
+                navigation.replace('AdminHome');
+              } else if (rol === 'lavador') {
+                navigation.replace('LavadorHome');
+              } else if (rol === 'calidad') {
+                navigation.replace('ControlCalidadHome');
+              } else if (rol === 'observador') {
+                navigation.replace('ObservadorHome');
+              } else {
+                Alert.alert('Error de rol', 'Rol no reconocido.');
+                navigation.replace('Login');
+              }
+            } else {
+              Alert.alert('Usuario no registrado en Firestore.');
+              navigation.replace('Login');
+            }
+          } catch (error) {
+            Alert.alert('Error', 'Problema al obtener datos del usuario.');
+            navigation.replace('Login');
+          }
         } else {
-          // Si no reconoce el correo, vuelve a Login
           navigation.replace('Login');
         }
-      } else {
-        // Si no hay sesión iniciada
-        navigation.replace('Login');
-      }
+      }, 2000); // Mostrar el logo
     });
 
     return unsubscribe;
@@ -35,7 +62,7 @@ export default function SplashScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <ActivityIndicator size="large" color="#4CAF50" />
+      <ActivityIndicator size="large" color="#2196F3" />
     </View>
   );
 }
@@ -48,9 +75,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: 180,
-    height: 180,
-    marginBottom: 20,
+    width: 260, // logo grande como me pediste
+    height: 260,
     resizeMode: 'contain',
   },
 });
