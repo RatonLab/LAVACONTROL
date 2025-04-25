@@ -1,58 +1,41 @@
 import React, { useEffect } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
-import { app } from '../firebaseConfig';
+import app from '../firebaseConfig';
 
-export default function SplashScreen() {
-  const navigation = useNavigation();
+export default function SplashScreen({ navigation }) {
   const auth = getAuth(app);
-  const db = getFirestore(app);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        try {
-          if (user) {
-            const ref = doc(db, 'usuarios', user.uid);
-            const snap = await getDoc(ref);
-            const rol = snap.exists() ? snap.data().rol : null;
-
-            switch (rol) {
-              case 'admin':
-                navigation.replace('AdminHome');
-                break;
-              case 'lavador':
-                navigation.replace('LavadorHome');
-                break;
-              case 'control':
-                navigation.replace('CalidadHome');
-                break;
-              case 'observador':
-                navigation.replace('ObservadorHome');
-                break;
-              default:
-                navigation.replace('Login');
-            }
-          } else {
-            navigation.replace('Login');
-          }
-        } catch (error) {
-          console.log('Error en SplashScreen:', error);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Aquí puedes diferenciar por email para simular ROL
+        const email = user.email;
+        if (email === 'admin@lavacontrol.com') {
+          navigation.replace('AdminHome');
+        } else if (email === 'lavador@lavacontrol.com') {
+          navigation.replace('LavadorHome');
+        } else if (email === 'calidad@lavacontrol.com') {
+          navigation.replace('ControlCalidadHome');
+        } else if (email === 'observador@lavacontrol.com') {
+          navigation.replace('ObservadorHome');
+        } else {
+          // Si no reconoce el correo, vuelve a Login
           navigation.replace('Login');
         }
-      });
+      } else {
+        // Si no hay sesión iniciada
+        navigation.replace('Login');
+      }
+    });
 
-      return () => unsubscribe();
-    }, 2000); // espera 2 segundos antes de redirigir
-
-    return () => clearTimeout(timer);
+    return unsubscribe;
   }, []);
 
   return (
     <View style={styles.container}>
       <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <ActivityIndicator size="large" color="#4CAF50" />
     </View>
   );
 }
@@ -65,8 +48,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: 280,
-    height: 280,
+    width: 180,
+    height: 180,
+    marginBottom: 20,
     resizeMode: 'contain',
   },
 });
