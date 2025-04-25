@@ -1,21 +1,28 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { signOut } from 'firebase/auth';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { auth } from '../firebaseConfig';
+import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 
 export default function ControlCalidadHome() {
   const navigation = useNavigation();
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigation.replace('Login');
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido, Control de Calidad</Text>
-      <Button title="Cerrar sesión" onPress={handleLogout} color="#D9534F" />
+      <Text style={styles.title}>Panel de Control de Calidad</Text>
+
+      {/* Aquí agregarás después las funciones de revisión de lavados, filtros, validaciones */}
+
+      {/* Botón de cerrar sesión */}
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={async () => {
+          await signOut(auth);
+          navigation.replace('Login');
+        }}
+      >
+        <Text style={styles.logoutText}>Cerrar Sesión</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -25,12 +32,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center'
-  }
+    color: '#2196F3',
+    marginBottom: 30,
+  },
+  logoutButton: {
+    backgroundColor: '#FF5252',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 40,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });

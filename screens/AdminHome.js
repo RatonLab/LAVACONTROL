@@ -1,115 +1,106 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
-import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
-import app from '../firebaseConfig';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-const auth = getAuth(app);
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 export default function AdminHome() {
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(true); // Nueva bandera de carga
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setLoading(false); // Si está autenticado, carga pantalla
-      } else {
-        navigation.replace('Login'); // Si no, lo manda al Login
-      }
-    });
-
-    return unsubscribe; // Limpieza al salir
-  }, []);
-
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        navigation.replace('Login');
-      })
-      .catch((error) => {
-        Alert.alert('Error al cerrar sesión', error.message);
-      });
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigation.replace('Login');
   };
-
-  const handleGestionUsuarios = () => {
-    Alert.alert('Gestión de Usuarios', 'Aquí podrás crear, eliminar y asignar roles.');
-  };
-
-  const handleVerEstadisticas = () => {
-    Alert.alert('Estadísticas', 'Aquí podrás visualizar estadísticas globales y por usuario.');
-  };
-
-  const handleVerRegistros = () => {
-    Alert.alert('Registros', 'Aquí podrás consultar todos los lavados registrados.');
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#2196F3" />
-      </View>
-    );
-  }
 
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <Text style={styles.title}>Bienvenido Administrador</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Bienvenido, Administrador</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleGestionUsuarios}>
-        <Text style={styles.buttonText}>Gestión de Usuarios</Text>
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Gestión de Usuarios</Text>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Crear / Eliminar Usuario</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Asignar Roles</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleVerEstadisticas}>
-        <Text style={styles.buttonText}>Visualizar Estadísticas</Text>
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Estadísticas</Text>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Lavados por Lavador</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Lavados por Local</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Tiempo Promedio por Área</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleVerRegistros}>
-        <Text style={styles.buttonText}>Ver Registros</Text>
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Filtros</Text>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Filtrar por Fecha</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Filtrar por Lavador</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Filtrar por Local</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={[styles.button, styles.signOutButton]} onPress={handleSignOut}>
-        <Text style={styles.buttonText}>Cerrar Sesión</Text>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
-    resizeMode: 'contain',
+    padding: 20,
+    backgroundColor: '#fff',
+    alignItems: 'stretch',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 30,
+    color: '#2196F3',
+    textAlign: 'center',
+    marginBottom: 25,
+  },
+  section: {
+    marginBottom: 25,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: 10,
   },
   button: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 15,
-    width: '100%',
-    borderRadius: 8,
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  signOutButton: {
-    backgroundColor: '#FF5252',
+    backgroundColor: '#E3F2FD',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginBottom: 10,
   },
   buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
+    color: '#0D47A1',
+    fontWeight: '600',
+  },
+  logoutButton: {
+    backgroundColor: '#FF5252',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  logoutText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
 });

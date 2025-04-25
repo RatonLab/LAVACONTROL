@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // ✅ CORRECTO
+import { Picker } from '@react-native-picker/picker';
+import { auth } from '../firebaseConfig';
+import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 
 export default function LavadorHome() {
@@ -129,6 +131,17 @@ export default function LavadorHome() {
           <Text style={styles.infoText}>Duración: {calcularDuracion()}</Text>
         </>
       )}
+
+      {/* Botón de cerrar sesión */}
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={async () => {
+          await signOut(auth);
+          navigation.replace('Login');
+        }}
+      >
+        <Text style={styles.logoutText}>Cerrar Sesión</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -189,5 +202,16 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
     color: '#555',
+  },
+  logoutButton: {
+    backgroundColor: '#FF5252',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
