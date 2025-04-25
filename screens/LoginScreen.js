@@ -8,9 +8,11 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import app from '../firebaseConfig'; // ✔️ Importamos el app de firebaseConfig
 import { useNavigation } from '@react-navigation/native';
+
+const auth = getAuth(app); // ✔️ Inicializamos auth con la app
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -35,8 +37,12 @@ export default function LoginScreen() {
         return;
       }
 
-      // Si está verificado, Splash se encarga de redirigir según el rol
+      // 🔵 Aquí podrías agregar lógica de navegación según el tipo de usuario si quieres.
+      // Por ahora, simplemente puedes ir a una pantalla por defecto.
+      navigation.replace('AdminHome'); // ← Puedes cambiar esto según tu flujo
+
     } catch (error) {
+      console.error(error);
       Alert.alert('Error al iniciar sesión', error.message);
     }
   };
@@ -86,6 +92,7 @@ const styles = StyleSheet.create({
     height: 140,
     alignSelf: 'center',
     marginBottom: 20,
+    resizeMode: 'contain',
   },
   input: {
     height: 50,
