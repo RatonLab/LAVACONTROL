@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native';
 import { auth } from '../firebaseConfig';
 import { signOut } from 'firebase/auth';
-import { useNavigation } from '@react-navigation/native';
 
 export default function LavadorHome() {
   const navigation = useNavigation();
 
   const [patente, setPatente] = useState('');
   const [tipoVehiculo, setTipoVehiculo] = useState('');
+  const [local, setLocal] = useState('');
   const [area, setArea] = useState('');
   const [tipoLavado, setTipoLavado] = useState('');
   const [estadoInicial, setEstadoInicial] = useState('');
@@ -17,8 +26,8 @@ export default function LavadorHome() {
   const [horaFin, setHoraFin] = useState(null);
 
   const iniciarLavado = () => {
-    if (!patente || !tipoVehiculo || !area || !tipoLavado || !estadoInicial) {
-      Alert.alert('Campos incompletos', 'Por favor completa todos los datos antes de iniciar el lavado.');
+    if (!patente || !tipoVehiculo || !local || !area || !tipoLavado || !estadoInicial) {
+      Alert.alert('Campos incompletos', 'Por favor completa todos los campos antes de iniciar el lavado.');
       return;
     }
     const horaActual = new Date();
@@ -43,6 +52,11 @@ export default function LavadorHome() {
       return `${minutos} min ${segundos} seg`;
     }
     return '';
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigation.replace('Login');
   };
 
   return (
@@ -70,6 +84,19 @@ export default function LavadorHome() {
         <Picker.Item label="Camión 3/4" value="Camión 3/4" />
         <Picker.Item label="Minibús" value="Minibús" />
         <Picker.Item label="Camión" value="Camión" />
+      </Picker>
+
+      <Text style={styles.label}>Local</Text>
+      <Picker
+        selectedValue={local}
+        style={styles.picker}
+        onValueChange={(itemValue) => setLocal(itemValue)}
+      >
+        <Picker.Item label="Seleccione..." value="" />
+        <Picker.Item label="Local 1" value="Local 1" />
+        <Picker.Item label="Local 2" value="Local 2" />
+        <Picker.Item label="Local 3" value="Local 3" />
+        <Picker.Item label="Local 4" value="Local 4" />
       </Picker>
 
       <Text style={styles.label}>Área</Text>
@@ -123,25 +150,20 @@ export default function LavadorHome() {
       </TouchableOpacity>
 
       {horaInicio && (
-        <Text style={styles.infoText}>Hora de Inicio: {horaInicio.toLocaleTimeString()}</Text>
+        <Text style={styles.infoText}>🕒 Inicio: {horaInicio.toLocaleTimeString()}</Text>
       )}
       {horaFin && (
         <>
-          <Text style={styles.infoText}>Hora de Fin: {horaFin.toLocaleTimeString()}</Text>
-          <Text style={styles.infoText}>Duración: {calcularDuracion()}</Text>
+          <Text style={styles.infoText}>🕓 Fin: {horaFin.toLocaleTimeString()}</Text>
+          <Text style={styles.infoText}>🧼 Tiempo total de lavado: {calcularDuracion()}</Text>
         </>
       )}
 
       {/* Botón de cerrar sesión */}
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={async () => {
-          await signOut(auth);
-          navigation.replace('Login');
-        }}
-      >
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
+
     </ScrollView>
   );
 }
@@ -174,8 +196,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
     marginBottom: 15,
     backgroundColor: '#f9f9f9',
   },
@@ -205,10 +225,12 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: '#FF5252',
-    paddingVertical: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 30,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 30,
+    marginBottom: 20,
   },
   logoutText: {
     color: '#fff',
