@@ -8,11 +8,15 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import app from '../firebaseConfig'; // ✔️ Importamos el app de firebaseConfig
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
+import app from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 
-const auth = getAuth(app); // ✔️ Inicializamos auth con la app
+const auth = getAuth(app);
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -37,14 +41,29 @@ export default function LoginScreen() {
         return;
       }
 
-      // 🔵 Aquí podrías agregar lógica de navegación según el tipo de usuario si quieres.
-      // Por ahora, simplemente puedes ir a una pantalla por defecto.
-      navigation.replace('AdminHome'); // ← Puedes cambiar esto según tu flujo
+      // Redirección provisional (puedes cambiarla por lógica de rol)
+      navigation.replace('AdminHome');
 
     } catch (error) {
       console.error(error);
       Alert.alert('Error al iniciar sesión', error.message);
     }
+  };
+
+  const handleForgotPassword = () => {
+    if (!email) {
+      Alert.alert('Campo requerido', 'Por favor ingresa tu correo para recuperar la contraseña.');
+      return;
+    }
+
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        Alert.alert('Correo enviado', 'Revisa tu correo electrónico para restablecer tu contraseña.');
+      })
+      .catch((error) => {
+        console.error(error);
+        Alert.alert('Error', error.message);
+      });
   };
 
   return (
@@ -69,6 +88,10 @@ export default function LoginScreen() {
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleForgotPassword}>
+        <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -114,9 +137,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  forgotText: {
+    color: '#2196F3',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
   registerText: {
     textAlign: 'center',
-    marginTop: 10,
     color: '#333',
   },
 });
