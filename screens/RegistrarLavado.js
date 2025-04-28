@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
+import { db } from '../firebaseConfig';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
 export default function RegistrarLavado() {
   const navigation = useNavigation();
@@ -26,13 +28,36 @@ export default function RegistrarLavado() {
     setHoraFin(null);
   };
 
-  const terminarLavado = () => {
+  const terminarLavado = async () => {
     if (!horaInicio) {
       Alert.alert('Error', 'Debes iniciar el lavado antes de terminarlo.');
       return;
     }
-    setHoraFin(new Date());
+
+    const horaActual = new Date();
+    setHoraFin(horaActual);
     setLavadoCompletado(true);
+
+    try {
+      await addDoc(collection(db, 'lavados'), {
+        patente: patente,
+        tipoVehiculo: tipoVehiculo,
+        local: local,
+        area: area,
+        tipoLavado: tipoLavado,
+        estadoInicial: estadoInicial,
+        horaInicio: Timestamp.fromDate(horaInicio),
+        horaFin: Timestamp.fromDate(horaActual),
+        duracion: calcularDuracion(),
+        creadoEn: Timestamp.now(),
+      });
+
+      Alert.alert('Registro exitoso', 'El lavado fue registrado correctamente.');
+
+    } catch (error) {
+      console.error('Error al registrar lavado:', error);
+      Alert.alert('Error', 'No se pudo registrar el lavado.');
+    }
   };
 
   const cancelarLavado = () => {
