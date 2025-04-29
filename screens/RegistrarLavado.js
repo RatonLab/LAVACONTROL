@@ -1,119 +1,129 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  ScrollView
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 
 export default function RegistrarLavado() {
   const navigation = useNavigation();
 
   const [patente, setPatente] = useState('');
   const [tipoVehiculo, setTipoVehiculo] = useState('');
-  const [local, setLocal] = useState('');
   const [area, setArea] = useState('');
   const [tipoLavado, setTipoLavado] = useState('');
   const [estadoInicial, setEstadoInicial] = useState('');
+  const [local, setLocal] = useState('');
+
   const [horaInicio, setHoraInicio] = useState(null);
   const [horaFin, setHoraFin] = useState(null);
-  const [lavadoCompletado, setLavadoCompletado] = useState(false);
-  const [lavadoCancelado, setLavadoCancelado] = useState(false);
+  const [lavadoTerminado, setLavadoTerminado] = useState(false);
 
   const iniciarLavado = () => {
-    if (!patente || !tipoVehiculo || !local || !area || !tipoLavado || !estadoInicial) {
-      Alert.alert('Campos incompletos', 'Por favor completa todos los campos antes de iniciar el lavado.');
+    if (
+      !patente ||
+      !tipoVehiculo ||
+      !area ||
+      !tipoLavado ||
+      !estadoInicial ||
+      !local
+    ) {
+      Alert.alert(
+        'Faltan datos',
+        'Por favor completa todos los campos antes de iniciar el lavado.'
+      );
       return;
     }
     setHoraInicio(new Date());
     setHoraFin(null);
+    setLavadoTerminado(false);
   };
 
   const terminarLavado = async () => {
     if (!horaInicio) {
-      Alert.alert('Error', 'Debes iniciar el lavado antes de terminarlo.');
+      Alert.alert('Error', 'Primero debes iniciar el lavado.');
       return;
     }
-
-    const horaActual = new Date();
-    setHoraFin(horaActual);
-    setLavadoCompletado(true);
+    const fin = new Date();
+    setHoraFin(fin);
 
     try {
       await addDoc(collection(db, 'lavados'), {
-        patente: patente,
-        tipoVehiculo: tipoVehiculo,
-        local: local,
-        area: area,
-        tipoLavado: tipoLavado,
-        estadoInicial: estadoInicial,
-        horaInicio: Timestamp.fromDate(horaInicio),
-        horaFin: Timestamp.fromDate(horaActual),
-        duracion: calcularDuracion(),
-        creadoEn: Timestamp.now(),
+        patente,
+        tipoVehiculo,
+        area,
+        tipoLavado,
+        estadoInicial,
+        local,
+        horaInicio: horaInicio.toISOString(),
+        horaFin: fin.toISOString(),
+        duracion: calcularDuracion(horaInicio, fin),
+        creadoEn: serverTimestamp(),
+        estadoCalidad: 'Pendiente',
       });
-
-      Alert.alert('Registro exitoso', 'El lavado fue registrado correctamente.');
-
+      setLavadoTerminado(true);
+      Alert.alert('✅ Éxito', 'Lavado registrado correctamente.');
     } catch (error) {
-      console.error('Error al registrar lavado:', error);
+      console.error(error);
       Alert.alert('Error', 'No se pudo registrar el lavado.');
     }
   };
 
+  const calcularDuracion = (inicio, fin) => {
+    const diffMs = fin - inicio;
+    const minutos = Math.floor(diffMs / 60000);
+    const segundos = Math.floor((diffMs % 60000) / 1000);
+    return `${minutos} min ${segundos} seg`;
+  };
+
   const cancelarLavado = () => {
-    Alert.alert('Confirmar', '¿Estás seguro que quieres cancelar el registro?', [
-      { text: 'No', style: 'cancel' },
-      { text: 'Sí', onPress: () => {
-          limpiarFormulario();
-          setLavadoCancelado(true);
-          navigation.replace('LavadorHome');
-        }
-      }
-    ]);
+    Alert.alert(
+      'Cancelar Lavado',
+      '¿Estás seguro que quieres cancelar el registro?',
+      [
+        { text: 'No', style: 'cancel' },
+        { text: 'Sí', onPress: limpiarFormulario },
+      ]
+    );
   };
 
   const limpiarFormulario = () => {
     setPatente('');
     setTipoVehiculo('');
-    setLocal('');
     setArea('');
     setTipoLavado('');
     setEstadoInicial('');
+    setLocal('');
     setHoraInicio(null);
     setHoraFin(null);
-  };
-
-  const volverPantallaPrincipal = () => {
-    if (lavadoCompletado || lavadoCancelado) {
-      navigation.replace('LavadorHome');
-    } else {
-      Alert.alert('Advertencia', 'Debe terminar o cancelar el registro antes de salir.');
-    }
-  };
-
-  const calcularDuracion = () => {
-    if (horaInicio && horaFin) {
-      const diferencia = (horaFin - horaInicio) / 1000;
-      const minutos = Math.floor(diferencia / 60);
-      const segundos = Math.floor(diferencia % 60);
-      return `${minutos} min ${segundos} seg`;
-    }
-    return '';
+    setLavadoTerminado(false);
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Registrar Lavado</Text>
+      <Text style={styles.title}>Registro de Lavado</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Patente del Vehículo"
+        placeholder="Patente"
         value={patente}
         onChangeText={setPatente}
       />
 
       <Text style={styles.label}>Tipo de Vehículo</Text>
-      <Picker selectedValue={tipoVehiculo} style={styles.picker} onValueChange={setTipoVehiculo}>
+      <Picker
+        selectedValue={tipoVehiculo}
+        onValueChange={setTipoVehiculo}
+        style={styles.picker}
+      >
         <Picker.Item label="Seleccione..." value="" />
         <Picker.Item label="Automóvil" value="Automóvil" />
         <Picker.Item label="SUV" value="SUV" />
@@ -125,7 +135,11 @@ export default function RegistrarLavado() {
       </Picker>
 
       <Text style={styles.label}>Local</Text>
-      <Picker selectedValue={local} style={styles.picker} onValueChange={setLocal}>
+      <Picker
+        selectedValue={local}
+        onValueChange={setLocal}
+        style={styles.picker}
+      >
         <Picker.Item label="Seleccione..." value="" />
         <Picker.Item label="Local 1" value="Local 1" />
         <Picker.Item label="Local 2" value="Local 2" />
@@ -134,7 +148,11 @@ export default function RegistrarLavado() {
       </Picker>
 
       <Text style={styles.label}>Área</Text>
-      <Picker selectedValue={area} style={styles.picker} onValueChange={setArea}>
+      <Picker
+        selectedValue={area}
+        onValueChange={setArea}
+        style={styles.picker}
+      >
         <Picker.Item label="Seleccione..." value="" />
         <Picker.Item label="Mecánica" value="Mecánica" />
         <Picker.Item label="Desabolladura" value="Desabolladura" />
@@ -144,7 +162,11 @@ export default function RegistrarLavado() {
       </Picker>
 
       <Text style={styles.label}>Tipo de Lavado</Text>
-      <Picker selectedValue={tipoLavado} style={styles.picker} onValueChange={setTipoLavado}>
+      <Picker
+        selectedValue={tipoLavado}
+        onValueChange={setTipoLavado}
+        style={styles.picker}
+      >
         <Picker.Item label="Seleccione..." value="" />
         <Picker.Item label="Cortesía" value="Cortesía" />
         <Picker.Item label="Interior" value="Interior" />
@@ -154,7 +176,11 @@ export default function RegistrarLavado() {
       </Picker>
 
       <Text style={styles.label}>Estado Inicial</Text>
-      <Picker selectedValue={estadoInicial} style={styles.picker} onValueChange={setEstadoInicial}>
+      <Picker
+        selectedValue={estadoInicial}
+        onValueChange={setEstadoInicial}
+        style={styles.picker}
+      >
         <Picker.Item label="Seleccione..." value="" />
         <Picker.Item label="Muy Sucio" value="Muy Sucio" />
         <Picker.Item label="Sucio" value="Sucio" />
@@ -163,29 +189,54 @@ export default function RegistrarLavado() {
         <Picker.Item label="Muy Limpio" value="Muy Limpio" />
       </Picker>
 
-      <TouchableOpacity style={styles.buttonStart} onPress={iniciarLavado}>
+      <TouchableOpacity
+        style={styles.buttonStart}
+        onPress={iniciarLavado}
+      >
         <Text style={styles.buttonText}>Iniciar Lavado</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.buttonEnd} onPress={terminarLavado}>
+      <TouchableOpacity
+        style={styles.buttonEnd}
+        onPress={terminarLavado}
+      >
         <Text style={styles.buttonText}>Terminar Lavado</Text>
       </TouchableOpacity>
 
-      {horaInicio && <Text style={styles.infoText}>Inicio: {horaInicio.toLocaleTimeString()}</Text>}
-      {horaFin && (
-        <>
-          <Text style={styles.infoText}>Fin: {horaFin.toLocaleTimeString()}</Text>
-          <Text style={styles.infoText}>Duración: {calcularDuracion()}</Text>
-        </>
+      {horaInicio && (
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>
+            🕓 Inicio: {horaInicio.toLocaleTimeString()}
+          </Text>
+          {horaFin && (
+            <>
+              <Text style={styles.infoText}>
+                🕒 Fin: {horaFin.toLocaleTimeString()}
+              </Text>
+              <Text style={styles.infoText}>
+                🧽 Tiempo total: {calcularDuracion(horaInicio, horaFin)}
+              </Text>
+            </>
+          )}
+        </View>
       )}
 
-      <TouchableOpacity style={styles.buttonCancel} onPress={cancelarLavado}>
-        <Text style={styles.buttonText}>Cancelar Lavado</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.buttonBack} onPress={volverPantallaPrincipal}>
-        <Text style={styles.buttonText}>Volver a Pantalla Principal</Text>
-      </TouchableOpacity>
+      {lavadoTerminado && (
+        <>
+          <TouchableOpacity
+            style={styles.buttonCancel}
+            onPress={cancelarLavado}
+          >
+            <Text style={styles.buttonText}>Cancelar Lavado</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttonReturn}
+            onPress={() => navigation.navigate('LavadorHome')}
+          >
+            <Text style={styles.buttonText}>Volver a Menú Principal</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -198,28 +249,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 20,
-    alignSelf: 'center',
+    textAlign: 'center',
     color: '#2196F3',
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    padding: 12,
     borderRadius: 8,
     marginBottom: 15,
+    backgroundColor: '#f9f9f9',
   },
   label: {
     fontWeight: 'bold',
-    marginBottom: 5,
     marginTop: 10,
+    marginBottom: 5,
     color: '#333',
   },
   picker: {
     height: 50,
-    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
     backgroundColor: '#f9f9f9',
+    marginBottom: 15,
+    borderRadius: 8,
   },
   buttonStart: {
     backgroundColor: '#4CAF50',
@@ -242,8 +296,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  buttonBack: {
-    backgroundColor: '#03A9F4',
+  buttonReturn: {
+    backgroundColor: '#2196F3',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -253,10 +307,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  infoContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
   infoText: {
     fontSize: 16,
-    marginTop: 5,
-    textAlign: 'center',
-    color: '#555',
+    marginVertical: 2,
   },
 });
