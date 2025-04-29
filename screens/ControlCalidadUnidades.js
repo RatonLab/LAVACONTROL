@@ -31,19 +31,19 @@ export default function ControlCalidadUnidades() {
 
   // Lista completa de No Conformidades
   const NC_OPTIONS = [
-    { code: 'NC01', label: 'Suciedad en zonas visibles' },
-    { code: 'NC02', label: 'Vidrios con manchas' },
-    { code: 'NC03', label: 'Ruedas mal lavadas' },
-    { code: 'NC04', label: 'Interior con polvo' },
-    { code: 'NC05', label: 'Tapicería manchada' },
-    { code: 'NC06', label: 'Mal olor interior' },
-    { code: 'NC07', label: 'Guardafangos sucios' },
-    { code: 'NC08', label: 'Restos de jabón' },
-    { code: 'NC09', label: 'Motor no lavado' },
-    { code: 'NC10', label: 'Limpieza inaccesible' },
-    { code: 'NC11', label: 'Techo mal lavado' },
-    { code: 'NC12', label: 'Maletero sucio' },
-    { code: 'NC13', label: 'Retraso en lavado de unidad' },
+    { code: 'NC01', label: 'Suciedad en zonas visibles (Puertas, Capó)' },
+    { code: 'NC02', label: 'Vidrios con manchas y/o empañados' },
+    { code: 'NC03', label: 'Ruedas y/o llantas sucias o mal lavadas' },
+    { code: 'NC04', label: 'Interior con restos de polvo y/o basura' },
+    { code: 'NC05', label: 'Tapicería y/o alfombras con manchas visibles' },
+    { code: 'NC06', label: 'Maletero sucio y/o mal aspirado' },
+    { code: 'NC07', label: 'Techo sin lavar y/o mal lavado' },
+    { code: 'NC08', label: 'Retrasado en lavado de unidad' },
+    { code: 'NC09', label: 'Mal olor en interior de unidad' },
+    { code: 'NC10', label: 'Guardafangos y/o zonas inferiores sucias' },
+    { code: 'NC11', label: 'Restos de jabón, cera, u otro aditivo mal retirado' },
+    { code: 'NC12', label: 'Motor mal lavado (Si aplica)' },
+    { code: 'NC13', label: 'Falta de limpieza en espacios de dificil acceso' },
   ];
   // Carga los lavados pendientes
   useEffect(() => {
