@@ -1,37 +1,32 @@
+// screens/SplashScreen.js
+
 import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+  Alert
+} from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-import { auth } from '../firebaseConfig';
-import { useNavigation } from '@react-navigation/native';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebaseConfig';
 
-export default function SplashScreen() {
-  const navigation = useNavigation();
-  const db = getFirestore();
-
+export default function SplashScreen({ navigation }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // Mantener el splash unos segundos
       setTimeout(async () => {
         if (user) {
-          if (!user.emailVerified) {
-            Alert.alert(
-              'Correo no verificado',
-              'Debes verificar tu correo antes de ingresar.'
-            );
-            navigation.replace('Login');
-            return;
-          }
-
           try {
             const docRef = doc(db, 'usuarios', user.uid);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-              const data = docSnap.data();
-              const rol = data.rol?.toLowerCase();
+              const rol = docSnap.data().rol?.toLowerCase();
 
               if (rol === 'administrador') {
-                navigation.replace('AdminHome');
+                navigation.replace('AdminMenu');
               } else if (rol === 'lavador') {
                 navigation.replace('LavadorHome');
               } else if (rol === 'calidad') {
@@ -39,21 +34,24 @@ export default function SplashScreen() {
               } else if (rol === 'observador') {
                 navigation.replace('ObservadorHome');
               } else {
-                Alert.alert('Error de rol', 'Rol no reconocido.');
+                Alert.alert(
+                  'Error de rol',
+                  'No se reconoce tu rol. Contacta al administrador.'
+                );
                 navigation.replace('Login');
               }
             } else {
-              Alert.alert('Usuario no registrado en Firestore.');
+              Alert.alert('Error', 'Usuario no registrado en la base de datos.');
               navigation.replace('Login');
             }
           } catch (error) {
-            Alert.alert('Error', 'Problema al obtener datos del usuario.');
+            Alert.alert('Error al obtener datos', error.message);
             navigation.replace('Login');
           }
         } else {
           navigation.replace('Login');
         }
-      }, 2000); // Mostrar el logo
+      }, 2000);
     });
 
     return unsubscribe;
@@ -61,7 +59,10 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Image
+        source={require('../assets/logo.png')}
+        style={styles.logo}
+      />
       <ActivityIndicator size="large" color="#2196F3" />
     </View>
   );
@@ -70,13 +71,14 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   logo: {
-    width: 260, // logo grande como me pediste
-    height: 260,
+    width: 200,
+    height: 200,
+    marginBottom: 20,
     resizeMode: 'contain',
   },
 });

@@ -1,59 +1,94 @@
+// screens/AdminHome.js
+
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Alert
+} from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
 export default function AdminHome() {
   const navigation = useNavigation();
 
   const handleLogout = async () => {
-    await signOut(auth);
-    navigation.replace('Login');
+    try {
+      await signOut(auth);
+      navigation.replace('Login');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'No se pudo cerrar sesión.');
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Bienvenido, Administrador</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Gestión de Usuarios</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Crear / Eliminar Usuario</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Asignar Roles</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.sectionTitle}>Gestión de Usuarios</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('CreateUser')}
+      >
+        <Text style={styles.buttonText}>Crear / Eliminar Usuario</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('AssignRoles')}
+      >
+        <Text style={styles.buttonText}>Asignar Roles</Text>
+      </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Estadísticas</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Lavados por Lavador</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Lavados por Local</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Tiempo Promedio por Área</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.sectionTitle}>Estadísticas</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('StatsByLavador')}
+      >
+        <Text style={styles.buttonText}>Lavados por Lavador</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('StatsByLocal')}
+      >
+        <Text style={styles.buttonText}>Lavados por Local</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('StatsTimeByArea')}
+      >
+        <Text style={styles.buttonText}>Tiempo Promedio por Área</Text>
+      </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Filtros</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Filtrar por Fecha</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Filtrar por Lavador</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Filtrar por Local</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.sectionTitle}>Filtros</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('FilterByDate')}
+      >
+        <Text style={styles.buttonText}>Filtrar por Fecha</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('FilterByLavador')}
+      >
+        <Text style={styles.buttonText}>Filtrar por Lavador</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('FilterByLocal')}
+      >
+        <Text style={styles.buttonText}>Filtrar por Local</Text>
+      </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Cerrar Sesión</Text>
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
+      >
+        <Text style={styles.buttonText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -62,45 +97,37 @@ export default function AdminHome() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 40,
     backgroundColor: '#fff',
-    alignItems: 'stretch',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#2196F3',
     textAlign: 'center',
     marginBottom: 25,
   },
-  section: {
-    marginBottom: 25,
-  },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '600',
+    marginTop: 20,
     marginBottom: 10,
+    color: '#333',
   },
   button: {
     backgroundColor: '#E3F2FD',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    marginBottom: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   buttonText: {
-    color: '#0D47A1',
-    fontWeight: '600',
+    color: '#1E88E5',
+    fontSize: 16,
+    fontWeight: '500',
   },
   logoutButton: {
-    backgroundColor: '#FF5252',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: '#F44336',
     marginTop: 30,
-  },
-  logoutText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
