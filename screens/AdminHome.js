@@ -1,94 +1,71 @@
-// screens/AdminHome.js
-
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert
-} from 'react-native';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getAuth, signOut } from 'firebase/auth';
+import { db } from '../firebaseConfig';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 export default function AdminHome() {
   const navigation = useNavigation();
+  const [usuario, setUsuario] = useState(null);
+  const [limite, setLimite] = useState(null);
+  const [cantidadActual, setCantidadActual] = useState(0);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigation.replace('Login');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'No se pudo cerrar sesión.');
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const ref = collection(db, 'usuarios');
+      const q = query(ref, where('uid', '==', user.uid));
+      getDocs(q).then(snapshot => {
+        if (!snapshot.empty) {
+          const datos = snapshot.docs[0].data();
+          setUsuario(datos);
+          setLimite(datos.limiteUsuarios || 0);
+
+          const qUsuarios = query(ref, where('adminId', '==', user.uid));
+          getDocs(qUsuarios).then(snap => setCantidadActual(snap.size));
+        }
+      });
     }
+  }, []);
+
+  const cerrarSesion = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+    navigation.replace('Login');
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Bienvenido, Administrador</Text>
 
-      <Text style={styles.sectionTitle}>Gestión de Usuarios</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('CreateUser')}
-      >
-        <Text style={styles.buttonText}>Crear / Eliminar Usuario</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('AssignRoles')}
-      >
-        <Text style={styles.buttonText}>Asignar Roles</Text>
-      </TouchableOpacity>
+      {usuario && (
+        <View style={styles.infoBox}>
+          <Text style={styles.info}>Plan: {usuario.nombrePlan || 'No definido'}</Text>
+          <Text style={styles.info}>Usuarios usados: {cantidadActual} / {limite}</Text>
+        </View>
+      )}
 
-      <Text style={styles.sectionTitle}>Estadísticas</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('StatsByLavador')}
-      >
-        <Text style={styles.buttonText}>Lavados por Lavador</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('StatsByLocal')}
-      >
-        <Text style={styles.buttonText}>Lavados por Local</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('StatsTimeByArea')}
-      >
-        <Text style={styles.buttonText}>Tiempo Promedio por Área</Text>
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Gestión de Usuarios</Text>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CrearUsuario')}>
+          <Text style={styles.buttonText}>Crear / Eliminar Usuario</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AsignarRoles')}>
+          <Text style={styles.buttonText}>Asignar Roles</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Text style={styles.sectionTitle}>Filtros</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('FilterByDate')}
-      >
-        <Text style={styles.buttonText}>Filtrar por Fecha</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('FilterByLavador')}
-      >
-        <Text style={styles.buttonText}>Filtrar por Lavador</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('FilterByLocal')}
-      >
-        <Text style={styles.buttonText}>Filtrar por Local</Text>
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Estadísticas</Text>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AdminStatsMenu')}>
+          <Text style={styles.buttonText}>Ver Estadísticas</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity
-        style={[styles.button, styles.logoutButton]}
-        onPress={handleLogout}
-      >
-        <Text style={styles.buttonText}>Cerrar Sesión</Text>
+      <TouchableOpacity style={styles.logoutButton} onPress={cerrarSesion}>
+        <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -97,37 +74,53 @@ export default function AdminHome() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingBottom: 40,
     backgroundColor: '#fff',
+    flexGrow: 1,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#2196F3',
     textAlign: 'center',
-    marginBottom: 25,
+    color: '#2196F3',
+    marginBottom: 20,
+  },
+  section: {
+    marginBottom: 30,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginTop: 20,
+    fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333',
   },
   button: {
     backgroundColor: '#E3F2FD',
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    padding: 12,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   buttonText: {
-    color: '#1E88E5',
-    fontSize: 16,
-    fontWeight: '500',
+    color: '#0D47A1',
+    fontWeight: '600',
   },
   logoutButton: {
-    backgroundColor: '#F44336',
-    marginTop: 30,
+    backgroundColor: '#FF5252',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  logoutText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  infoBox: {
+    marginBottom: 20,
+    padding: 10,
+    backgroundColor: '#F1F8E9',
+    borderRadius: 8,
+  },
+  info: {
+    fontSize: 16,
+    color: '#33691E',
   },
 });
