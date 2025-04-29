@@ -1,17 +1,65 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function EstadisticaControlCalidadMes() {
+  const data = {
+    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+    datasets: [
+      {
+        data: [120, 135, 110, 145, 138, 125],
+        color: (opacity = 1) => `rgba(255, 87, 34, ${opacity})`,
+        strokeWidth: 2,
+      },
+    ],
+    legend: ['Unidades Controladas'],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(255, 87, 34, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: {
+      borderRadius: 16,
+    },
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Unidades Controladas por Mes</Text>
-      <Text style={styles.subtitle}>Aquí irá el reporte mensual de unidades controladas.</Text>
-    </View>
+      <LineChart
+        data={data}
+        width={screenWidth - 32}
+        height={320}
+        chartConfig={chartConfig}
+        bezier
+        fromZero
+        style={styles.chart}
+        verticalLabelRotation={20}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2196F3', marginBottom: 20 },
-  subtitle: { fontSize: 16, color: '#555' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#FF5722',
+  },
+  chart: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+  },
 });

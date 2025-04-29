@@ -1,17 +1,77 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { PieChart } from 'react-native-chart-kit';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function EstadisticaCantidadLavadosLocal() {
+  // Datos de ejemplo
+  const data = [
+    {
+      name: 'Local 1',
+      cantidad: 40,
+      color: '#4CAF50',
+      legendFontColor: '#333',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Local 2',
+      cantidad: 25,
+      color: '#2196F3',
+      legendFontColor: '#333',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Local 3',
+      cantidad: 20,
+      color: '#FFC107',
+      legendFontColor: '#333',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Local 4',
+      cantidad: 15,
+      color: '#FF5722',
+      legendFontColor: '#333',
+      legendFontSize: 15,
+    },
+  ];
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Cantidad de Vehículos Lavados por Local</Text>
-      <Text style={styles.subtitle}>Aquí irá el gráfico o reporte.</Text>
-    </View>
+      <PieChart
+        data={data}
+        width={screenWidth - 32}
+        height={320}
+        chartConfig={{
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
+        accessor="cantidad"
+        backgroundColor="transparent"
+        paddingLeft="16"
+        absolute
+        style={styles.chart}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2196F3', marginBottom: 20 },
-  subtitle: { fontSize: 16, color: '#555' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#4CAF50',
+  },
+  chart: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+  },
 });

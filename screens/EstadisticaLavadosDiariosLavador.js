@@ -1,98 +1,69 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import React from 'react';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { BarChart } from 'react-native-chart-kit';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function EstadisticaLavadosDiariosLavador() {
-  const [estadisticas, setEstadisticas] = useState([]);
+  // Datos de ejemplo
+  const data = {
+    labels: ['Juan', 'Pedro', 'María', 'Lucía', 'Carlos', 'Ana'],
+    datasets: [
+      {
+        data: [5, 8, 4, 9, 6, 7],
+      },
+    ],
+  };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'lavados'));
-        const lavados = [];
-
-        querySnapshot.forEach((doc) => {
-          lavados.push(doc.data());
-        });
-
-        const agrupado = {};
-
-        lavados.forEach((lavado) => {
-          const fecha = lavado.fechaInicio ? new Date(lavado.fechaInicio.seconds * 1000).toLocaleDateString() : 'Fecha desconocida';
-          const email = lavado.emailLavador || 'Lavador desconocido';
-
-          if (!agrupado[fecha]) agrupado[fecha] = {};
-          if (!agrupado[fecha][email]) agrupado[fecha][email] = 0;
-
-          agrupado[fecha][email]++;
-        });
-
-        const datos = [];
-
-        Object.keys(agrupado).forEach((fecha) => {
-          Object.keys(agrupado[fecha]).forEach((email) => {
-            datos.push({ fecha, email, cantidad: agrupado[fecha][email] });
-          });
-        });
-
-        setEstadisticas(datos);
-      } catch (error) {
-        console.error('Error al obtener lavados:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const chartConfig = {
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`, // Azul
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,  // Negro
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: '6',
+      strokeWidth: '2',
+      stroke: '#2196F3',
+    },
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Lavados Diarios por Lavador</Text>
-
-      {estadisticas.length === 0 ? (
-        <Text style={styles.noData}>No hay datos para mostrar.</Text>
-      ) : (
-        estadisticas.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.text}>📅 Fecha: {item.fecha}</Text>
-            <Text style={styles.text}>👤 Lavador: {item.email}</Text>
-            <Text style={styles.text}>🧽 Lavados: {item.cantidad}</Text>
-          </View>
-        ))
-      )}
+      <BarChart
+        style={styles.chart}
+        data={data}
+        width={screenWidth - 32} // Ajuste al ancho de pantalla
+        height={320}
+        yAxisLabel=""
+        chartConfig={chartConfig}
+        verticalLabelRotation={30}
+        fromZero={true}
+        showValuesOnTopOfBars={true}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
-    paddingHorizontal: 15,
+    flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center'
+    paddingTop: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#2196F3',
+    textAlign: 'center',
     marginBottom: 20,
-    textAlign: 'center'
+    color: '#2196F3',
   },
-  card: {
-    width: '100%',
-    backgroundColor: '#E3F2FD',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 10
+  chart: {
+    borderRadius: 16,
+    marginHorizontal: 16,
   },
-  text: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 5
-  },
-  noData: {
-    fontSize: 18,
-    color: '#999',
-    marginTop: 20
-  }
 });
