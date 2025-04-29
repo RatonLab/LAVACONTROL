@@ -7,7 +7,7 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 
-// Home por roles
+// Menú por rol
 import AdminMenu from '../screens/AdminMenu';
 import AdminHome from '../screens/AdminHome';
 import LavadorHome from '../screens/LavadorHome';
@@ -18,10 +18,15 @@ import ObservadorHome from '../screens/ObservadorHome';
 // Registrar lavado
 import RegistrarLavado from '../screens/RegistrarLavado';
 
+// Gestión de usuarios
+import CrearUsuario from '../screens/CrearUsuario';
+import ListarUsuarios from '../screens/ListarUsuarios';
+import EditarUsuario from '../screens/EditarUsuario';
+
 // Menú de estadísticas
 import AdminStatsMenu from '../screens/AdminStatsMenu';
 
-// Estadísticas (Español)
+// Pantallas de estadísticas (españolizadas)
 import EstadisticaLavadosDiariosLavador from '../screens/EstadisticaLavadosDiariosLavador';
 import EstadisticaLavadosMensualesLavador from '../screens/EstadisticaLavadosMensualesLavador';
 import EstadisticaTiempoDiarioLavador from '../screens/EstadisticaTiempoDiarioLavador';
@@ -36,7 +41,7 @@ import EstadisticaNoConformesLavador from '../screens/EstadisticaNoConformesLava
 import EstadisticaNoConformesLocal from '../screens/EstadisticaNoConformesLocal';
 import EstadisticaTopNoConformidadesMes from '../screens/EstadisticaTopNoConformidadesMes';
 
-// Filtros (Placeholders)
+// Filtros (placeholders)
 import FiltroPorFecha from '../screens/FiltroPorFecha';
 import FiltroPorLavador from '../screens/FiltroPorLavador';
 import FiltroPorLocal from '../screens/FiltroPorLocal';
@@ -48,11 +53,11 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Splash">
 
-        {/* Screens principales */}
+        {/* Inicio */}
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Iniciar sesión' }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Crear cuenta' }} />
-        
+
         {/* Menú por rol */}
         <Stack.Screen name="AdminMenu" component={AdminMenu} options={{ headerShown: false }} />
         <Stack.Screen name="AdminHome" component={AdminHome} options={{ title: 'Gestión de Usuarios' }} />
@@ -60,14 +65,17 @@ export default function AppNavigator() {
         <Stack.Screen name="ControlCalidadHome" component={ControlCalidadHome} options={{ headerShown: false }} />
         <Stack.Screen name="ControlCalidadUnidades" component={ControlCalidadUnidades} options={{ title: 'Controlar Unidades' }} />
         <Stack.Screen name="ObservadorHome" component={ObservadorHome} options={{ headerShown: false }} />
-        
+
         {/* Lavado */}
         <Stack.Screen name="RegistrarLavado" component={RegistrarLavado} options={{ title: 'Registrar Lavado' }} />
 
-        {/* Menú estadísticas */}
-        <Stack.Screen name="AdminStatsMenu" component={AdminStatsMenu} options={{ title: 'Estadísticas' }} />
+        {/* Gestión de usuarios */}
+        <Stack.Screen name="CrearUsuario" component={CrearUsuario} options={{ title: 'Crear Usuario' }} />
+        <Stack.Screen name="ListarUsuarios" component={ListarUsuarios} options={{ title: 'Listar Usuarios' }} />
+        <Stack.Screen name="EditarUsuario" component={EditarUsuario} options={{ title: 'Editar Usuario' }} />
 
-        {/* Pantallas de estadísticas */}
+        {/* Estadísticas */}
+        <Stack.Screen name="AdminStatsMenu" component={AdminStatsMenu} options={{ title: 'Estadísticas' }} />
         <Stack.Screen name="EstadisticaLavadosDiariosLavador" component={EstadisticaLavadosDiariosLavador} />
         <Stack.Screen name="EstadisticaLavadosMensualesLavador" component={EstadisticaLavadosMensualesLavador} />
         <Stack.Screen name="EstadisticaTiempoDiarioLavador" component={EstadisticaTiempoDiarioLavador} />

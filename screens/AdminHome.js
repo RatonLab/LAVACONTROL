@@ -1,70 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getAuth, signOut } from 'firebase/auth';
 import { db } from '../firebaseConfig';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 export default function AdminHome() {
   const navigation = useNavigation();
+  const auth = getAuth();
   const [usuario, setUsuario] = useState(null);
-  const [limite, setLimite] = useState(null);
-  const [cantidadActual, setCantidadActual] = useState(0);
+
+  // 🔧 Corrección automática de usuarios sin nombre
+  const corregirUsuariosSinNombre = async () => {
+    const usuariosRef = collection(db, 'usuarios');
+    const snapshot = await getDocs(usuariosRef);
+
+    snapshot.forEach(async (usuario) => {
+      const data = usuario.data();
+      if (!data.nombre) {
+        const nombreGenerado = data.email.split('@')[0];
+        await updateDoc(doc(db, 'usuarios', usuario.id), {
+          nombre: nombreGenerado,
+        });
+        console.log(`Nombre agregado al usuario: ${nombreGenerado}`);
+      }
+    });
+  };
 
   useEffect(() => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (user) {
-      const ref = collection(db, 'usuarios');
-      const q = query(ref, where('uid', '==', user.uid));
-      getDocs(q).then(snapshot => {
-        if (!snapshot.empty) {
-          const datos = snapshot.docs[0].data();
-          setUsuario(datos);
-          setLimite(datos.limiteUsuarios || 0);
-
-          const qUsuarios = query(ref, where('adminId', '==', user.uid));
-          getDocs(qUsuarios).then(snap => setCantidadActual(snap.size));
-        }
-      });
-    }
+    corregirUsuariosSinNombre();
   }, []);
 
-  const cerrarSesion = async () => {
-    const auth = getAuth();
-    await signOut(auth);
-    navigation.replace('Login');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      Alert.alert('Error al cerrar sesión', error.message);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Bienvenido, Administrador</Text>
 
-      {usuario && (
-        <View style={styles.infoBox}>
-          <Text style={styles.info}>Plan: {usuario.nombrePlan || 'No definido'}</Text>
-          <Text style={styles.info}>Usuarios usados: {cantidadActual} / {limite}</Text>
-        </View>
-      )}
+      <Text style={styles.section}>Gestión de Usuarios</Text>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ListarUsuarios')}>
+        <Text style={styles.buttonText}>Ver y Editar Usuarios</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CrearUsuario')}>
+        <Text style={styles.buttonText}>Crear Usuario</Text>
+      </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Gestión de Usuarios</Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CrearUsuario')}>
-          <Text style={styles.buttonText}>Crear / Eliminar Usuario</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AsignarRoles')}>
-          <Text style={styles.buttonText}>Asignar Roles</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.section}>Estadísticas</Text>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AdminStatsMenu')}>
+        <Text style={styles.buttonText}>Ver Panel Estadístico</Text>
+      </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Estadísticas</Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AdminStatsMenu')}>
-          <Text style={styles.buttonText}>Ver Estadísticas</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={cerrarSesion}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -80,47 +72,37 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
     color: '#2196F3',
-    marginBottom: 20,
-  },
-  section: {
+    textAlign: 'center',
     marginBottom: 30,
   },
-  sectionTitle: {
+  section: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginTop: 20,
     marginBottom: 10,
   },
   button: {
     backgroundColor: '#E3F2FD',
-    padding: 12,
-    borderRadius: 8,
+    padding: 15,
+    borderRadius: 10,
     marginBottom: 10,
   },
   buttonText: {
+    fontSize: 16,
     color: '#0D47A1',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   logoutButton: {
+    marginTop: 30,
     backgroundColor: '#FF5252',
     padding: 15,
-    borderRadius: 8,
-    marginTop: 20,
+    borderRadius: 10,
   },
   logoutText: {
-    color: 'white',
-    textAlign: 'center',
+    color: '#fff',
     fontWeight: 'bold',
-  },
-  infoBox: {
-    marginBottom: 20,
-    padding: 10,
-    backgroundColor: '#F1F8E9',
-    borderRadius: 8,
-  },
-  info: {
-    fontSize: 16,
-    color: '#33691E',
+    textAlign: 'center',
   },
 });

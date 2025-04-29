@@ -12,7 +12,7 @@ export default function UserCard({ usuario, onEliminar }) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.nombre}>{usuario.nombre || 'Sin nombre'}</Text>
+      <Text style={styles.nombre}>{usuario?.nombre || 'Sin nombre'}</Text>
       <Text style={styles.info}>Correo: {usuario.email}</Text>
       <Text style={styles.info}>Rol: {usuario.rol}</Text>
       <Text style={styles.info}>Local: {usuario.local || '-'}</Text>

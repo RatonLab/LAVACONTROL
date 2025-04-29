@@ -1,36 +1,29 @@
 // screens/CrearUsuario.js
-
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { db } from '../firebaseConfig';
-import { collection, addDoc } from 'firebase/firestore';
+import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { UserService } from '../services/UserService';
 import { useNavigation } from '@react-navigation/native';
 
 export default function CrearUsuario() {
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [rol, setRol] = useState('');
   const navigation = useNavigation();
 
-  const handleCrearUsuario = async () => {
-    if (!email || !rol) {
-      Alert.alert('Error', 'Por favor completa todos los campos.');
+  const handleCreate = async () => {
+    if (!nombre || !email || !rol) {
+      Alert.alert('Campos incompletos', 'Por favor completa todos los campos.');
       return;
     }
 
     try {
-      const usuariosRef = collection(db, 'usuarios');
-      await addDoc(usuariosRef, {
-        email: email.toLowerCase(),
-        rol: rol.toLowerCase(),
-        estadoCuenta: 'activa', // Puedes agregar más campos si quieres
-      });
-
-      Alert.alert('Éxito', 'Usuario creado correctamente.');
-      setEmail('');
-      setRol('');
+      await UserService.createUser({ nombre, email, rol });
+      Alert.alert('Éxito', 'Usuario creado correctamente');
+      navigation.goBack();
     } catch (error) {
-      console.error('Error al crear usuario:', error);
-      Alert.alert('Error', 'No se pudo crear el usuario.');
+      console.error(error);
+      Alert.alert('Error', 'No se pudo crear el usuario');
     }
   };
 
@@ -40,68 +33,41 @@ export default function CrearUsuario() {
 
       <TextInput
         style={styles.input}
+        placeholder="Nombre completo"
+        value={nombre}
+        onChangeText={setNombre}
+      />
+
+      <TextInput
+        style={styles.input}
         placeholder="Correo electrónico"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Rol (lavador, calidad, observador)"
-        value={rol}
-        onChangeText={setRol}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleCrearUsuario}>
-        <Text style={styles.buttonText}>Crear Usuario</Text>
-      </TouchableOpacity>
+      <Picker
+        selectedValue={rol}
+        onValueChange={(itemValue) => setRol(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Selecciona un rol..." value="" />
+        <Picker.Item label="Administrador" value="administrador" />
+        <Picker.Item label="Lavador" value="lavador" />
+        <Picker.Item label="Control de Calidad" value="control_calidad" />
+        <Picker.Item label="Observador" value="observador" />
+      </Picker>
 
-      <TouchableOpacity style={styles.buttonBack} onPress={() => navigation.goBack()}>
-        <Text style={styles.buttonText}>Volver</Text>
-      </TouchableOpacity>
+      <Button title="Crear Usuario" onPress={handleCreate} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#4CAF50',
-    marginBottom: 30,
-  },
+  container: { flex: 1, padding: 20 },
+  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginBottom: 15,
-    backgroundColor: '#f9f9f9',
+    borderWidth: 1, borderColor: '#ccc', borderRadius: 5,
+    padding: 10, marginBottom: 15
   },
-  button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonBack: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  picker: { marginBottom: 20 }
 });

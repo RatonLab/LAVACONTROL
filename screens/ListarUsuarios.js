@@ -1,69 +1,85 @@
-// screens/ListarUsuarios.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Alert, StyleSheet } from 'react-native';
-import { getAllUsers, updateUserRole, deleteUser } from '../services/UserService';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { UserService } from '../services/UserService';
 import UserCard from '../components/UserCard';
 
 export default function ListarUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const cargarUsuarios = async () => {
-    setLoading(true);
-    const lista = await getAllUsers();
-    setUsuarios(lista);
-    setLoading(false);
-  };
-
   useEffect(() => {
-    cargarUsuarios();
+    const cargar = async () => {
+      try {
+        await UserService.asignarAdminIdSiFalta();
+        const data = await UserService.getAllUsers();
+        setUsuarios(data);
+      } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargar();
   }, []);
 
-  const cambiarRol = async (uid, nuevoRol) => {
-    await updateUserRole(uid, nuevoRol);
-    cargarUsuarios();
+  const handleEliminar = async (userId) => {
+    await UserService.deleteUser(userId);
+    const data = await UserService.getAllUsers();
+    setUsuarios(data);
   };
 
-  const confirmarEliminacion = (uid) => {
-    Alert.alert(
-      '¿Eliminar usuario?',
-      'Esta acción no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar', style: 'destructive', onPress: () => eliminarUsuario(uid) }
-      ]
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Buscando usuarios...</Text>
+      </View>
     );
-  };
-
-  const eliminarUsuario = async (uid) => {
-    await deleteUser(uid);
-    cargarUsuarios();
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Usuarios Registrados</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#2196F3" />
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Usuarios Registrados</Text>
+      {usuarios.length === 0 ? (
+        <Text style={styles.noUsers}>No hay usuarios registrados.</Text>
       ) : (
-        <FlatList
-          data={usuarios}
-          keyExtractor={(item) => item.uid}
-          renderItem={({ item }) => (
-            <UserCard
-              usuario={item}
-              onCambiarRol={(nuevoRol) => cambiarRol(item.uid, nuevoRol)}
-              onEliminar={() => confirmarEliminacion(item.uid)}
-            />
-          )}
-        />
+        usuarios.map((usuario) => (
+          <UserCard key={usuario.id} usuario={usuario} onEliminar={handleEliminar} />
+        ))
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  titulo: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 }
+  container: {
+    padding: 20,
+    backgroundColor: '#fff',
+    alignItems: 'stretch',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  noUsers: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
 });
