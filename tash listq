@@ -1,0 +1,20 @@
+[33m1880da7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mtrabajar-desde-admin-con-problemas-registro-correo[m[33m)[m OK Admin no permite registrar correo y dejar avanzar, el resto OK
+[33m9765dff[m Avance OK, falta Std real, panel observador
+[33mf5319d5[m con adm std
+[33m7dd13bc[m con pantallas std
+[33m8cae221[m ingreso, lavado, control calidad OK - falta adm, observador  y std
+[33m1180bfa[m Inicio, Lavador Ok, Calidad OK. falta Admin y std por cada usuario
+[33mccb6179[m Inicio OK - Registro calidad OK - Calidad Sin picker o boxes
+[33maec957b[m Inicio OK, Lavado (OK -std) Control OK - menu desplegable
+[33m4f36ae4[m Inicio OK, Login OK, Panta CC con filtros, boton no revisado pendiente
+[33m03fe1da[m Splash + Login + HomeAdmin + Homelavador 2 pantallas OK
+[33m5270dbe[m Splash + Inicio+ Adminhome + LavadorHome + Registro lavado - pantalla bienvenida
+[33m18d8e36[m splas + inicio + admhome + lavahome + picker horas + cerrar sesion
+[33md6a3ab9[m Splash + Login + redirección + admin + Lavd home + cierre sesión
+[33md541a37[m splash + login + direcciona a home adm o lavador
+[33mb47a105[m Ingreso OK+ Pantalla Administrador OK
+[33m7e1d0cf[m Recuperación de contraseña OK
+[33m2920a6e[m Ingresa a Firebase y muestra pantalla admin y lavador
+[33mfeafcef[m Pantalla carga splash y login. problemas con conexion Firebase
+[33m2fe992c[m Mensaje descriptivo del commit
+[33mbccde4f[m Created a new Expo app
