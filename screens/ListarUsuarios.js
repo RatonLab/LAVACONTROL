@@ -1,85 +1,101 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Button } from 'react-native-paper';
 import { UserService } from '../services/UserService';
 import UserCard from '../components/UserCard';
 
 export default function ListarUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
-  useEffect(() => {
-    const cargar = async () => {
-      try {
-        await UserService.asignarAdminIdSiFalta();
-        const data = await UserService.getAllUsers();
-        setUsuarios(data);
-      } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargar();
-  }, []);
-
-  const handleEliminar = async (userId) => {
-    await UserService.deleteUser(userId);
-    const data = await UserService.getAllUsers();
-    setUsuarios(data);
+  const cargarUsuarios = async () => {
+    try {
+      const data = await UserService.getAllUsers();
+      setUsuarios(data);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudieron cargar los usuarios');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Buscando usuarios...</Text>
-      </View>
-    );
-  }
+  const handleDelete = async (id) => {
+    Alert.alert('Confirmar', '¿Estás seguro que deseas eliminar este usuario?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        onPress: async () => {
+          try {
+            await UserService.deleteUser(id);
+            cargarUsuarios();
+          } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar el usuario');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleEdit = (usuario) => {
+    navigation.navigate('EditarUsuario', { usuario });
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', cargarUsuarios);
+    return unsubscribe;
+  }, [navigation]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Usuarios Registrados</Text>
-      {usuarios.length === 0 ? (
-        <Text style={styles.noUsers}>No hay usuarios registrados.</Text>
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Usuarios Registrados</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : usuarios.length === 0 ? (
+        <Text style={styles.subtitulo}>No hay usuarios registrados.</Text>
       ) : (
-        usuarios.map((usuario) => (
-          <UserCard key={usuario.id} usuario={usuario} onEliminar={handleEliminar} />
-        ))
+        <FlatList
+          data={usuarios}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => {
+            if (!item || !item.nombre || !item.email || !item.rol) return null;
+            return (
+              <UserCard
+                nombre={item.nombre}
+                email={item.email}
+                rol={item.rol}
+                onEdit={() => handleEdit(item)}
+                onDelete={() => handleDelete(item.id)}
+              />
+            );
+          }}
+        />
       )}
-    </ScrollView>
+      <Button mode="contained" onPress={() => navigation.goBack()} style={styles.botonVolver}>
+        Volver al menú
+      </Button>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#fff',
-    alignItems: 'stretch',
+    flex: 1,
+    padding: 16,
   },
-  title: {
+  titulo: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    marginBottom: 16,
+  },
+  subtitulo: {
+    fontSize: 18,
     textAlign: 'center',
-    marginBottom: 20,
+    marginTop: 20,
   },
-  noUsers: {
-    fontSize: 16,
-    color: '#888',
-    textAlign: 'center',
-    marginTop: 30,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
+  botonVolver: {
+    marginTop: 20,
+    backgroundColor: '#2196F3',
   },
 });

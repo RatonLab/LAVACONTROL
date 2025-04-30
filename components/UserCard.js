@@ -1,31 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
 
-export default function UserCard({ usuario, onEliminar }) {
-  const navigation = useNavigation();
-
-  const irAEditar = () => {
-    navigation.navigate('EditarUsuario', { userId: usuario.id });
-  };
-
+export default function UserCard({ nombre, email, rol, onEdit, onDelete }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.nombre}>{usuario?.nombre || 'Sin nombre'}</Text>
-      <Text style={styles.info}>Correo: {usuario.email}</Text>
-      <Text style={styles.info}>Rol: {usuario.rol}</Text>
-      <Text style={styles.info}>Local: {usuario.local || '-'}</Text>
-      <Text style={styles.info}>Área: {usuario.area || '-'}</Text>
-
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.botonEditar} onPress={irAEditar}>
-          <MaterialIcons name="edit" size={20} color="#fff" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.botonEliminar} onPress={() => onEliminar(usuario.id)}>
-          <MaterialIcons name="delete" size={20} color="#fff" />
-        </TouchableOpacity>
+      <Text style={styles.nombre}>{nombre || 'Sin nombre'}</Text>
+      <Text style={styles.detalle}>Correo: {email || 'Sin correo'}</Text>
+      <Text style={styles.detalle}>Rol: {rol || 'Sin rol'}</Text>
+      <View style={styles.botones}>
+        <Button mode="outlined" onPress={onEdit} style={styles.boton}>Editar</Button>
+        <Button mode="contained" onPress={onDelete} style={styles.botonEliminar}>Eliminar</Button>
       </View>
     </View>
   );
@@ -33,35 +18,30 @@ export default function UserCard({ usuario, onEliminar }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
     borderRadius: 10,
     padding: 16,
-    marginVertical: 8,
-    elevation: 3,
+    marginBottom: 12,
+    elevation: 2,
   },
   nombre: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 5,
   },
-  info: {
+  detalle: {
     fontSize: 14,
-    color: '#555',
+    marginTop: 4,
   },
-  actions: {
+  botones: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     marginTop: 10,
+    justifyContent: 'space-between',
   },
-  botonEditar: {
-    backgroundColor: '#2196F3',
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10,
+  boton: {
+    borderColor: '#007BFF',
+    borderWidth: 1,
   },
   botonEliminar: {
-    backgroundColor: '#f44336',
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: '#e53935',
   },
 });

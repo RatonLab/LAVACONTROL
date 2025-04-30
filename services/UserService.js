@@ -5,29 +5,30 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
-  doc,
-  query,
-  where,
+  doc
 } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
 
 const usersCollection = collection(db, 'usuarios');
 
 export const UserService = {
   // Crear usuario
   async createUser(userData) {
+    // Validación para asegurar que se registren usuarios completos
+    if (!userData.email || !userData.nombre || !userData.rol) {
+      throw new Error('Faltan datos obligatorios del usuario');
+    }
     return await addDoc(usersCollection, userData);
   },
 
-  // Obtener todos los usuarios creados por el admin actual
+  // Obtener todos los usuarios (evita errores con documentos incompletos)
   async getAllUsers() {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (!currentUser) return [];
-
-    const q = query(usersCollection, where('adminId', '==', currentUser.uid));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await getDocs(usersCollection);
+    return snapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+        return data && data.email ? { id: doc.id, ...data } : null;
+      })
+      .filter(Boolean); // elimina los nulls
   },
 
   // Actualizar usuario completo
@@ -40,26 +41,5 @@ export const UserService = {
   async deleteUser(userId) {
     const userRef = doc(db, 'usuarios', userId);
     return await deleteDoc(userRef);
-  },
-
-  // (Opcional) Agregar adminId si falta
-  async asignarAdminIdSiFalta() {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
-    const snapshot = await getDocs(usersCollection);
-    const updates = [];
-
-    for (const docSnap of snapshot.docs) {
-      const data = docSnap.data();
-      if (!data.adminId) {
-        updates.push(updateDoc(doc(db, 'usuarios', docSnap.id), {
-          adminId: currentUser.uid,
-        }));
-      }
-    }
-
-    await Promise.all(updates);
   }
 };

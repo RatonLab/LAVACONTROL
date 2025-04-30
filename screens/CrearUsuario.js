@@ -1,6 +1,6 @@
-// screens/CrearUsuario.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Alert } from 'react-native';
+import { Button } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import { UserService } from '../services/UserService';
 import { useNavigation } from '@react-navigation/native';
@@ -11,7 +11,7 @@ export default function CrearUsuario() {
   const [rol, setRol] = useState('');
   const navigation = useNavigation();
 
-  const handleCreate = async () => {
+  const crearUsuario = async () => {
     if (!nombre || !email || !rol) {
       Alert.alert('Campos incompletos', 'Por favor completa todos los campos.');
       return;
@@ -19,11 +19,10 @@ export default function CrearUsuario() {
 
     try {
       await UserService.createUser({ nombre, email, rol });
-      Alert.alert('Éxito', 'Usuario creado correctamente');
+      Alert.alert('Éxito', 'Usuario creado correctamente.');
       navigation.goBack();
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'No se pudo crear el usuario');
+      Alert.alert('Error', 'No se pudo crear el usuario: ' + error.message);
     }
   };
 
@@ -43,31 +42,63 @@ export default function CrearUsuario() {
         placeholder="Correo electrónico"
         value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
       />
 
-      <Picker
-        selectedValue={rol}
-        onValueChange={(itemValue) => setRol(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Selecciona un rol..." value="" />
-        <Picker.Item label="Administrador" value="administrador" />
-        <Picker.Item label="Lavador" value="lavador" />
-        <Picker.Item label="Control de Calidad" value="control_calidad" />
-        <Picker.Item label="Observador" value="observador" />
-      </Picker>
+      <Text style={styles.label}>Rol:</Text>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={rol}
+          onValueChange={(itemValue) => setRol(itemValue)}
+        >
+          <Picker.Item label="Selecciona un rol..." value="" />
+          <Picker.Item label="Administrador" value="administrador" />
+          <Picker.Item label="Lavador" value="lavador" />
+          <Picker.Item label="Control de Calidad" value="calidad" />
+          <Picker.Item label="Observador" value="observador" />
+        </Picker>
+      </View>
 
-      <Button title="Crear Usuario" onPress={handleCreate} />
+      <Button
+        mode="contained"
+        onPress={crearUsuario}
+        style={styles.button}
+      >
+        Crear Usuario
+      </Button>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 5,
-    padding: 10, marginBottom: 15
+  container: {
+    padding: 20,
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  picker: { marginBottom: 20 }
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    backgroundColor: '#f1f1f1',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  label: {
+    marginBottom: 5,
+    fontWeight: 'bold',
+  },
+  pickerContainer: {
+    backgroundColor: '#f1f1f1',
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  button: {
+    marginTop: 10,
+    padding: 8,
+  },
 });
