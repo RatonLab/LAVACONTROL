@@ -26,7 +26,7 @@ import EditarUsuario from '../screens/EditarUsuario';
 // Menú de estadísticas
 import AdminStatsMenu from '../screens/AdminStatsMenu';
 
-// Pantallas de estadísticas (españolizadas)
+// Pantallas de estadísticas
 import EstadisticaLavadosDiariosLavador from '../screens/EstadisticaLavadosDiariosLavador';
 import EstadisticaLavadosMensualesLavador from '../screens/EstadisticaLavadosMensualesLavador';
 import EstadisticaTiempoDiarioLavador from '../screens/EstadisticaTiempoDiarioLavador';
@@ -40,8 +40,9 @@ import EstadisticaControlCalidadLocal from '../screens/EstadisticaControlCalidad
 import EstadisticaNoConformesLavador from '../screens/EstadisticaNoConformesLavador';
 import EstadisticaNoConformesLocal from '../screens/EstadisticaNoConformesLocal';
 import EstadisticaTopNoConformidadesMes from '../screens/EstadisticaTopNoConformidadesMes';
+import EstadisticaCantidadLavadosPorLavador from '../screens/EstadisticaCantidadLavadosPorLavador';
 
-// Filtros (placeholders)
+// Filtros
 import FiltroPorFecha from '../screens/FiltroPorFecha';
 import FiltroPorLavador from '../screens/FiltroPorLavador';
 import FiltroPorLocal from '../screens/FiltroPorLocal';
@@ -89,6 +90,7 @@ export default function AppNavigator() {
         <Stack.Screen name="EstadisticaNoConformesLavador" component={EstadisticaNoConformesLavador} />
         <Stack.Screen name="EstadisticaNoConformesLocal" component={EstadisticaNoConformesLocal} />
         <Stack.Screen name="EstadisticaTopNoConformidadesMes" component={EstadisticaTopNoConformidadesMes} />
+        <Stack.Screen name="EstadisticaCantidadLavadosPorLavador" component={EstadisticaCantidadLavadosPorLavador} options={{ title: 'Lavados por Lavador' }} />
 
         {/* Filtros */}
         <Stack.Screen name="FiltroPorFecha" component={FiltroPorFecha} />

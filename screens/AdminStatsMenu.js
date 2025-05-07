@@ -28,6 +28,10 @@ export default function AdminStatsMenu() {
         <Text style={styles.buttonText}>Tiempo Promedio Mensual por Lavador</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('EstadisticaCantidadLavadosPorLavador')}>
+        <Text style={styles.buttonText}>Cantidad Total por Lavador</Text>
+      </TouchableOpacity>
+
       {/* Lavados por Local / Área */}
       <Text style={styles.sectionTitle}>Lavados por Local / Área</Text>
 
@@ -74,7 +78,6 @@ export default function AdminStatsMenu() {
       <TouchableOpacity style={[styles.button, styles.backButton]} onPress={() => navigation.goBack()}>
         <Text style={styles.buttonText}>🔙 Volver al Menú Principal</Text>
       </TouchableOpacity>
-
     </ScrollView>
   );
 }
