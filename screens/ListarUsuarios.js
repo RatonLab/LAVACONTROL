@@ -1,85 +1,81 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { UserService } from '../services/UserService';
-import UserCard from '../components/UserCard';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
 export default function ListarUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const cargar = async () => {
+    const fetchUsuarios = async () => {
       try {
-        await UserService.asignarAdminIdSiFalta();
-        const data = await UserService.getAllUsers();
-        setUsuarios(data);
+        const querySnapshot = await getDocs(collection(db, 'usuarios'));
+        const listaUsuarios = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setUsuarios(listaUsuarios);
       } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-      } finally {
-        setLoading(false);
+        console.error('❌ Error al obtener usuarios:', error);
       }
     };
 
-    cargar();
+    fetchUsuarios();
   }, []);
 
-  const handleEliminar = async (userId) => {
-    await UserService.deleteUser(userId);
-    const data = await UserService.getAllUsers();
-    setUsuarios(data);
+  const renderItem = ({ item }) => {
+    const userToSend = {
+      id: item.id,
+      nombre: item.nombre,
+      correo: item.correo || item.email || '',
+      rol: item.rol || '',
+    };
+
+    return (
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() => {
+          console.log('🧾 Enviando usuario a EditarUsuario:', userToSend);
+          navigation.navigate('EditarUsuario', { user: userToSend });
+        }}
+      >
+        <Text style={styles.nombre}>{userToSend.nombre}</Text>
+        <Text style={styles.correo}>{userToSend.correo}</Text>
+      </TouchableOpacity>
+    );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Buscando usuarios...</Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Usuarios Registrados</Text>
-      {usuarios.length === 0 ? (
-        <Text style={styles.noUsers}>No hay usuarios registrados.</Text>
-      ) : (
-        usuarios.map((usuario) => (
-          <UserCard key={usuario.id} usuario={usuario} onEliminar={handleEliminar} />
-        ))
-      )}
-    </ScrollView>
+    <View style={styles.container}>
+      <Text style={styles.titulo}>👤 Usuarios Registrados</Text>
+      <FlatList
+        data={usuarios}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.lista}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#fff',
-    alignItems: 'stretch',
-  },
-  title: {
+  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+  titulo: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
-    textAlign: 'center',
+    color: '#2196F3',
     marginBottom: 20,
+    textAlign: 'center'
   },
-  noUsers: {
-    fontSize: 16,
-    color: '#888',
-    textAlign: 'center',
-    marginTop: 30,
+  lista: { paddingBottom: 20 },
+  item: {
+    backgroundColor: '#E3F2FD',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 12,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
+  nombre: { fontSize: 18, fontWeight: 'bold' },
+  correo: { fontSize: 14, color: '#555' },
 });

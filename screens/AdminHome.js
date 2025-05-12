@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getAuth, signOut } from 'firebase/auth';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 export default function AdminHome() {
   const navigation = useNavigation();
-  const auth = getAuth();
+
   const [usuario, setUsuario] = useState(null);
 
   // 🔧 Corrección automática de usuarios sin nombre
@@ -31,14 +30,6 @@ export default function AdminHome() {
     corregirUsuariosSinNombre();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      Alert.alert('Error al cerrar sesión', error.message);
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Bienvenido, Administrador</Text>
@@ -54,10 +45,6 @@ export default function AdminHome() {
       <Text style={styles.section}>Estadísticas</Text>
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AdminStatsMenu')}>
         <Text style={styles.buttonText}>Ver Panel Estadístico</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -91,17 +78,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     color: '#0D47A1',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  logoutButton: {
-    marginTop: 30,
-    backgroundColor: '#FF5252',
-    padding: 15,
-    borderRadius: 10,
-  },
-  logoutText: {
-    color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
   },

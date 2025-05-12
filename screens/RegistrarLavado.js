@@ -12,6 +12,8 @@ import { Picker } from '@react-native-picker/picker';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
+import { getAuth } from 'firebase/auth';
+import moment from 'moment';
 
 export default function RegistrarLavado() {
   const navigation = useNavigation();
@@ -56,6 +58,9 @@ export default function RegistrarLavado() {
     setHoraFin(fin);
 
     try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
       await addDoc(collection(db, 'lavados'), {
         patente,
         tipoVehiculo,
@@ -68,7 +73,10 @@ export default function RegistrarLavado() {
         duracion: calcularDuracion(horaInicio, fin),
         creadoEn: serverTimestamp(),
         estadoCalidad: 'Pendiente',
+        lavador: user?.displayName || user?.email || 'Desconocido',
+        fecha: moment().format('YYYY-MM-DD')
       });
+
       setLavadoTerminado(true);
       Alert.alert('✅ Éxito', 'Lavado registrado correctamente.');
     } catch (error) {
